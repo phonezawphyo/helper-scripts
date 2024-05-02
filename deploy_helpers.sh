@@ -1,8 +1,13 @@
 #!/bin/bash
 
 unset -f hs_s3_deploy 2> /dev/null
+# Sync local folder to s3.
+# Add SoftDelete=yes to old remote files.
+# Remove SoftDelete tag from existing remote files.
+#
 # To customize AWS_PROFILE, prefix AWS_PROFILE=yourprofile before the function call.
 # E.g. `AWS_PROFILE=default hs_s3_deploy dist your-s3-bucket`
+#
 function hs_s3_deploy() {
   # Base directory for local files and bucket name
   local_folder=$1
