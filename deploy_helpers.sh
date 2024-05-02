@@ -60,16 +60,6 @@ function hs_s3_update_soft_delete() {
   temp_local_list="local_contents.txt"
   temp_local_exists="local_exists.txt"
 
-  # Call hs_dir_exists and pass the directory path
-  hs_dir_exists "$local_folder"
-  
-  # Check the exit status of the last executed command
-  if [ $? -eq 0 ]; then
-    # pass
-  else
-    return 1  # Propagate the failure signal
-  fi
-
   # Get list of all objects in the S3 bucket
   aws s3api list-objects --bucket $bucket --query 'Contents[].Key' --output json > $temp_s3_list
 
