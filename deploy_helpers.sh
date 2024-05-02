@@ -16,6 +16,18 @@ function hs_s3_deploy() {
   temp_local_list="local_contents.txt"
   temp_local_exists="local_exists.txt"
 
+  # Check if the directory exists
+  if [ -d "$local_folder" ]; then
+    # Check if the directory is not empty
+    if [ "$(ls -A $local_folder)" ]; then
+      # pass
+    else
+      return 1  # Fail
+    fi
+  else
+    return 1 # Fail
+  fi
+  
   # Sync local folder to S3
   aws s3 sync $local_folder s3://$bucket
 
