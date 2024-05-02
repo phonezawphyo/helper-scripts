@@ -28,22 +28,10 @@ function hs_s3_setup_softdelete_policy() {
 }
 
 
-# Sync local folder to s3.
-# Add SoftDelete=yes to old remote files.
-# Remove SoftDelete tag from existing remote files.
-#
-# To customize AWS_PROFILE, prefix AWS_PROFILE=yourprofile before the function call.
-# E.g. `AWS_PROFILE=default hs_s3_deploy dist your-s3-bucket`
-#
-unset -f hs_s3_deploy 2> /dev/null
-function hs_s3_deploy() {
-  # Base directory for local files and bucket name
+unset -f hs_dir_exists 2> /dev/null
+function hs_dir_exists() {
   local_folder=$1
-  bucket=$2
-  temp_s3_list="s3_contents.json"
-  temp_local_list="local_contents.txt"
-  temp_local_exists="local_exists.txt"
-
+  
   # Check if the directory exists
   if [ -d "$local_folder" ]; then
     # Check if the directory is not empty
@@ -55,9 +43,32 @@ function hs_s3_deploy() {
   else
     return 1 # Fail
   fi
+}
+
+
+# Add SoftDelete=yes to old remote files.
+# Remove SoftDelete tag from existing remote files.
+#
+# To customize AWS_PROFILE, prefix AWS_PROFILE=yourprofile before the function call.
+# E.g. `AWS_PROFILE=default hs_s3_deploy dist your-s3-bucket`
+#
+unset -f hs_s3_update_soft_delete 2> /dev/null
+function hs_s3_update_soft_delete() {
+  local_folder=$1
+  bucket=$2
+  temp_s3_list="s3_contents.json"
+  temp_local_list="local_contents.txt"
+  temp_local_exists="local_exists.txt"
+
+  # Call hs_dir_exists and pass the directory path
+  hs_dir_exists "$local_folder"
   
-  # Sync local folder to S3
-  aws s3 sync $local_folder s3://$bucket
+  # Check the exit status of the last executed command
+  if [ $? -eq 0 ]; then
+    # pass
+  else
+    return 1  # Propagate the failure signal
+  fi
 
   # Get list of all objects in the S3 bucket
   aws s3api list-objects --bucket $bucket --query 'Contents[].Key' --output json > $temp_s3_list
@@ -94,3 +105,4 @@ function hs_s3_deploy() {
   # Clean up
   rm $temp_s3_list $temp_local_list $temp_local_exists
 }
+
