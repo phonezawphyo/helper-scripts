@@ -2,7 +2,7 @@
 
 unset -f hs_s3_deploy 2> /dev/null
 # To customize AWS_PROFILE, prefix AWS_PROFILE=yourprofile before the function call.
-# E.g. `AWS_PROFILE=default hs_s3_deploy`
+# E.g. `AWS_PROFILE=default hs_s3_deploy dist your-s3-bucket`
 function hs_s3_deploy() {
   # Base directory for local files and bucket name
   local_folder=$1
