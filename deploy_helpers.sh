@@ -1,6 +1,33 @@
 #!/bin/bash
 
-unset -f hs_s3_deploy 2> /dev/null
+
+# To customize AWS_PROFILE, prefix AWS_PROFILE=yourprofile before the function call.
+# E.g. `AWS_PROFILE=default hs_s3_setup_softdelete_policy your-s3-bucket 7`
+unset -f hs_s3_setup_softdelete_policy 2> /dev/null
+function hs_s3_setup_softdelete_policy() {
+  bucket=$1
+  days=${2-7}
+  aws s3api put-bucket-lifecycle-configuration --bucket $bucket --lifecycle-configuration "{
+    \"Rules\": [
+        {
+            \"ID\": \"DeleteSoftDeletedObjects\",
+            \"Filter\": {
+                \"Tag\": {
+                    \"Key\": \"SoftDelete\",
+                    \"Value\": \"yes\"
+                }
+            },
+            \"Status\": \"Enabled\",
+            \"Expiration\": {
+                \"Days\": $days
+            }
+        }
+    ]
+  }"
+  echo Lifecycle policy setup done in bucket:$bucket policy-name:DeleteSoftDeletedObjects
+}
+
+
 # Sync local folder to s3.
 # Add SoftDelete=yes to old remote files.
 # Remove SoftDelete tag from existing remote files.
@@ -8,6 +35,7 @@ unset -f hs_s3_deploy 2> /dev/null
 # To customize AWS_PROFILE, prefix AWS_PROFILE=yourprofile before the function call.
 # E.g. `AWS_PROFILE=default hs_s3_deploy dist your-s3-bucket`
 #
+unset -f hs_s3_deploy 2> /dev/null
 function hs_s3_deploy() {
   # Base directory for local files and bucket name
   local_folder=$1
