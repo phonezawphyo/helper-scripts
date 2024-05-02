@@ -37,7 +37,7 @@ function hs_dir_exists() {
     # Check if the directory is not empty
     if [ "$(ls -A $local_folder)" ]; then
       # pass
-      echo Director exists: $local_folder
+      echo Directory exists: $local_folder
     else
       return 1  # Fail
     fi
