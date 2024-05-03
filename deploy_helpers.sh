@@ -97,3 +97,37 @@ function hs_s3_update_soft_delete() {
   rm $temp_s3_list $temp_local_list $temp_local_exists
 }
 
+# This is a helper function to be used with aws cloudfront invalidation
+# Example Usage:
+# AWS_PROFILE=default \
+#    aws cloudfront create-invalidation \
+#    --distribution-id $CF_DISTRIBUTION_ID \
+#    --paths / $(hs_gen_cf_paths_from_vue_pages src/pages | xargs)
+unset -f hs_gen_cf_paths_from_vue_pages 2> /dev/null
+function hs_gen_cf_paths_from_vue_pages() {
+  local dir=$1
+
+  # Initialize paths variable
+  local paths=""
+
+  # Check if the directory exists
+  if [[ ! -d "$dir" ]]; then
+    echo "Error: Directory does not exist" >&2
+    return 1
+  fi
+
+  # Generate arguments
+  for item in "$dir"/*; do
+    if [ -d "$item" ]; then
+      # If item is a directory, format as "/directoryname/*" and convert to lowercase
+      local dir_name=$(basename "$item" | tr '[:upper:]' '[:lower:]')
+      paths+="\"/${dir_name}/*\" "
+    elif [ -f "$item" ]; then
+      # If item is a file, remove the extension, format as "/filename", and convert to lowercase
+      local base=$(basename "$item" .vue | tr '[:upper:]' '[:lower:]')
+      paths+="/${base} "
+    fi
+  done
+
+  echo $paths
+}
