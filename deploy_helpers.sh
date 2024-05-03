@@ -125,7 +125,7 @@ function hs_gen_cf_paths_from_vue_pages() {
     elif [ -f "$item" ]; then
       # If item is a file, remove the extension, format as "/filename", and convert to lowercase
       local base=$(basename "$item" .vue | tr '[:upper:]' '[:lower:]')
-      paths+="/${base} "
+      paths+="\"/${base}\" "
     fi
   done
 
